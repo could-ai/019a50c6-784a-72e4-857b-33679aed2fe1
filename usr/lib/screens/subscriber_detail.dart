@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/subscriber.dart';
+import 'subscriber_form.dart';
 
 class SubscriberDetail extends StatefulWidget {
   final Subscriber subscriber;
