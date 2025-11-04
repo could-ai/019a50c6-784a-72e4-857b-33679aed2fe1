@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/subscriber.dart';
-import 'subscriber_form.dart';
-import 'subscriber_detail.dart';
+import '../models/item.dart';
+import 'item_form.dart';
+import 'item_detail.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,61 +11,74 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Subscriber> subscribers = [
-    Subscriber(
+  List<Item> items = [
+    Item(
       id: '1',
-      name: 'أحمد محمد',
-      email: 'ahmed@example.com',
-      phone: '0123456789',
-      registrationDate: DateTime.now().subtract(const Duration(days: 30)),
-      monthlyFee: 50.0,
-      subscriptions: [
-        Subscription(
-          id: 's1',
-          subscriberId: '1',
-          dueDate: DateTime.now().subtract(const Duration(days: 30)),
-          amount: 50.0,
-          isPaid: true,
-          paymentDate: DateTime.now().subtract(const Duration(days: 25)),
-        ),
-        Subscription(
-          id: 's2',
-          subscriberId: '1',
-          dueDate: DateTime.now(),
-          amount: 50.0,
-        ),
-      ],
+      name: 'مادة تجريبية 1',
+      wholesalePrice: 10.0,
+      sellingPrice: 15.0,
+    ),
+    Item(
+      id: '2',
+      name: 'مادة تجريبية 2',
+      wholesalePrice: 20.0,
+      sellingPrice: 25.0,
     ),
     // يمكن إضافة المزيد من البيانات التجريبية
   ];
 
-  void _addSubscriber(Subscriber subscriber) {
+  List<Item> filteredItems = [];
+  TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    filteredItems = items;
+    searchController.addListener(_filterItems);
+  }
+
+  void _filterItems() {
+    String query = searchController.text.toLowerCase();
     setState(() {
-      subscribers.add(subscriber);
+      filteredItems = items.where((item) => item.name.toLowerCase().contains(query)).toList();
     });
   }
 
-  void _updateSubscriber(Subscriber updatedSubscriber) {
+  void _addItem(Item item) {
     setState(() {
-      final index =
-          subscribers.indexWhere((s) => s.id == updatedSubscriber.id);
+      items.add(item);
+      _filterItems();
+    });
+  }
+
+  void _updateItem(Item updatedItem) {
+    setState(() {
+      final index = items.indexWhere((i) => i.id == updatedItem.id);
       if (index != -1) {
-        subscribers[index] = updatedSubscriber;
+        items[index] = updatedItem;
+        _filterItems();
       }
     });
   }
 
-  void _deleteSubscriber(String id) {
+  void _deleteItem(String id) {
     setState(() {
-      subscribers.removeWhere((s) => s.id == id);
+      items.removeWhere((i) => i.id == id);
+      _filterItems();
     });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إدارة المشتركين'),
+        title: const Text('إدارة المواد'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -73,8 +86,8 @@ class _HomeScreenState extends State<HomeScreen> {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SubscriberForm(
-                    onSave: _addSubscriber,
+                  builder: (context) => ItemForm(
+                    onSave: _addItem,
                   ),
                 ),
               );
@@ -82,28 +95,44 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: subscribers.length,
-        itemBuilder: (context, index) {
-          final subscriber = subscribers[index];
-          return ListTile(
-            title: Text(subscriber.name),
-            subtitle: Text('البريد: ${subscriber.email} | الهاتف: ${subscriber.phone}'),
-            trailing: Text('شهرياً: ${subscriber.monthlyFee}'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SubscriberDetail(
-                    subscriber: subscriber,
-                    onUpdate: _updateSubscriber,
-                    onDelete: _deleteSubscriber,
-                  ),
-                ),
-              );
-            },
-          );
-        },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: const InputDecoration(
+                labelText: 'البحث عن المادة',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredItems.length,
+              itemBuilder: (context, index) {
+                final item = filteredItems[index];
+                return ListTile(
+                  title: Text(item.name),
+                  subtitle: Text('سعر الجملة: ${item.wholesalePrice} | سعر البيع: ${item.sellingPrice}'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ItemDetail(
+                          item: item,
+                          onUpdate: _updateItem,
+                          onDelete: _deleteItem,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
