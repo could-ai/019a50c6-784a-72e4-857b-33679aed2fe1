@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/item.dart';
-import 'item_form.dart';
-import 'item_detail.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,17 +12,41 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Item> items = [
     Item(
       id: '1',
-      name: 'مادة تجريبية 1',
-      wholesalePrice: 10.0,
-      sellingPrice: 15.0,
+      name: 'هاتف ذكي سامسونج',
+      wholesalePrice: 500.0,
+      sellingPrice: 700.0,
     ),
     Item(
       id: '2',
-      name: 'مادة تجريبية 2',
-      wholesalePrice: 20.0,
-      sellingPrice: 25.0,
+      name: 'لابتوب أسوس',
+      wholesalePrice: 800.0,
+      sellingPrice: 1000.0,
     ),
-    // يمكن إضافة المزيد من البيانات التجريبية
+    Item(
+      id: '3',
+      name: 'سماعات بلوتوث',
+      wholesalePrice: 50.0,
+      sellingPrice: 80.0,
+    ),
+    Item(
+      id: '4',
+      name: 'شاشة كمبيوتر',
+      wholesalePrice: 200.0,
+      sellingPrice: 250.0,
+    ),
+    Item(
+      id: '5',
+      name: 'ماوس لاسلكي',
+      wholesalePrice: 20.0,
+      sellingPrice: 30.0,
+    ),
+    Item(
+      id: '6',
+      name: 'كيبورد ميكانيكي',
+      wholesalePrice: 100.0,
+      sellingPrice: 150.0,
+    ),
+    // يمكن إضافة المزيد من المنتجات التجريبية
   ];
 
   List<Item> filteredItems = [];
@@ -44,30 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _addItem(Item item) {
-    setState(() {
-      items.add(item);
-      _filterItems();
-    });
-  }
-
-  void _updateItem(Item updatedItem) {
-    setState(() {
-      final index = items.indexWhere((i) => i.id == updatedItem.id);
-      if (index != -1) {
-        items[index] = updatedItem;
-        _filterItems();
-      }
-    });
-  }
-
-  void _deleteItem(String id) {
-    setState(() {
-      items.removeWhere((i) => i.id == id);
-      _filterItems();
-    });
-  }
-
   @override
   void dispose() {
     searchController.dispose();
@@ -78,22 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إدارة المواد'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ItemForm(
-                    onSave: _addItem,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+        title: const Text('كتالوج المنتجات'),
       ),
       body: Column(
         children: [
@@ -102,32 +85,83 @@ class _HomeScreenState extends State<HomeScreen> {
             child: TextField(
               controller: searchController,
               decoration: const InputDecoration(
-                labelText: 'البحث عن المادة',
+                labelText: 'البحث عن المنتج',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // عدد الأعمدة في الشبكة
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+                childAspectRatio: 0.75, // نسبة العرض إلى الارتفاع للبطاقات
+              ),
               itemCount: filteredItems.length,
               itemBuilder: (context, index) {
                 final item = filteredItems[index];
-                return ListTile(
-                  title: Text(item.name),
-                  subtitle: Text('سعر الجملة: ${item.wholesalePrice} | سعر البيع: ${item.sellingPrice}'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ItemDetail(
-                          item: item,
-                          onUpdate: _updateItem,
-                          onDelete: _deleteItem,
+                return Card(
+                  elevation: 4.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // صورة افتراضية (يمكن استبدالها بصور حقيقية لاحقاً)
+                      Container(
+                        height: 120.0,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(10.0),
+                            topRight: Radius.circular(10.0),
+                          ),
+                          color: Colors.grey[300],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 50.0,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                    );
-                  },
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.name,
+                              style: const TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              'سعر البيع: ${item.sellingPrice} ريال',
+                              style: const TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.green,
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              'سعر الجملة: ${item.wholesalePrice} ريال',
+                              style: const TextStyle(
+                                fontSize: 12.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
